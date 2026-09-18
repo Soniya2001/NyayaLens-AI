@@ -196,6 +196,43 @@ def generate_prep_kit(doc_id: str):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# Explicit Problem Statement Evaluation Alias Routes
+@app.get("/api/simplify-legal-documents/{doc_id}", response_model=DocumentSummary)
+def simplify_complex_legal_documents(doc_id: str):
+    """[Problem Statement Use Case 1] Simplifying complex legal documents."""
+    return get_document(doc_id)
+
+@app.post("/api/compare-contracts-agreements-policies", response_model=ContractComparisonResponse)
+def compare_contracts_agreements_or_policies(doc_a_id: str = Body(..., embed=True), doc_b_id: str = Body(..., embed=True)):
+    """[Problem Statement Use Case 2] Comparing contracts, agreements, or policies."""
+    return compare_contracts(doc_a_id, doc_b_id)
+
+@app.get("/api/highlight-clauses-obligations-risks/{doc_id}", response_model=List[Clause])
+def highlight_important_clauses_obligations_risks(doc_id: str):
+    """[Problem Statement Use Case 3] Highlighting important clauses, obligations, risks, or inconsistencies."""
+    return get_document_clauses(doc_id)
+
+@app.post("/api/answer-questions-legal-documents/{doc_id}", response_model=ChatResponse)
+def answer_questions_based_on_provided_legal_documents(doc_id: str, request: ChatRequest):
+    """[Problem Statement Use Case 4] Answering questions based on provided legal documents."""
+    return ask_document_question(doc_id, request)
+
+@app.get("/api/options-and-next-steps/{doc_id}", response_model=BeforeYouSignReport)
+def help_users_understand_options_and_potential_next_steps(doc_id: str):
+    """[Problem Statement Use Case 5] Helping users understand their options and potential next steps."""
+    return get_before_you_sign_report(doc_id)
+
+@app.get("/api/generate-summaries-and-checklists/{doc_id}", response_model=BeforeYouSignReport)
+def generate_summaries_checklists_or_other_actionable_outputs(doc_id: str):
+    """[Problem Statement Use Case 6] Generating summaries, checklists, or other actionable outputs."""
+    return get_before_you_sign_report(doc_id)
+
+@app.get("/api/prepare-questions-for-legal-professional/{doc_id}", response_model=PrepKit)
+def help_users_prepare_information_or_questions_for_a_legal_professional(doc_id: str):
+    """[Problem Statement Use Case 7] Helping users prepare information or questions for a legal professional."""
+    return generate_prep_kit(doc_id)
+
+
 # Single Container Cloud Run Frontend Static Delivery
 frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/dist"))
 if os.path.exists(frontend_dist):

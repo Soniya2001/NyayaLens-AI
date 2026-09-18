@@ -233,6 +233,20 @@ def help_users_prepare_information_or_questions_for_a_legal_professional(doc_id:
     return generate_prep_kit(doc_id)
 
 
+from app.services.evaluation_suite import EvaluationSuiteRunner
+
+eval_runner = EvaluationSuiteRunner()
+
+@app.get("/api/evaluate")
+def run_evaluation_benchmark():
+    """
+    [Automated AI Evaluation Benchmark Suite]
+    Executes 50 automated test cases across Document Understanding, RAG Grounding, Safety, and Comparison.
+    """
+    return eval_runner.run_full_evaluation()
+
+
+
 # Single Container Cloud Run Frontend Static Delivery
 frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/dist"))
 if os.path.exists(frontend_dist):

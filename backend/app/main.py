@@ -1,5 +1,6 @@
 import os
-from fastapi import FastAPI, UploadFile, File, HTTPException, Body
+import re
+from fastapi import FastAPI, UploadFile, File, HTTPException, Body, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -12,13 +13,27 @@ from app.models.schemas import (
 from app.agents.orchestrator import MultiAgentOrchestrator, DOC_STORE
 from app.samples.synthetic_contracts import SYNTHETIC_DOCUMENTS
 
+MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB limit for upload security
+ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt", ".md"}
+
 app = FastAPI(
-    title="NyayaLens AI - Legal Intelligence Platform",
-    description="Evidence-First GenAI Legal Information & Document Assistance API",
+    title="NyayaLens AI — Evidence-First Legal Information & Document Intelligence Platform",
+    description=(
+        "GenAI-powered solution that makes legal information and basic legal assistance accessible. "
+        "Helps users understand, compare, and navigate legal documents and information without replacing professional legal advice.\n\n"
+        "Key Use Cases Addressed:\n"
+        "1. Simplifying complex legal documents\n"
+        "2. Comparing contracts, agreements, or policies\n"
+        "3. Highlighting important clauses, obligations, risks, or inconsistencies\n"
+        "4. Answering questions based on provided legal documents\n"
+        "5. Helping users understand their options and potential next steps\n"
+        "6. Generating summaries, checklists, or other actionable outputs\n"
+        "7. Helping users prepare information or questions for a legal professional"
+    ),
     version="1.0.0"
 )
 
-# Enable CORS for React frontend
+# Enable CORS & Security Headers Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,6 +42,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response: Response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 orchestrator = MultiAgentOrchestrator()
 
 @app.get("/api/health")
@@ -34,12 +58,14 @@ def health_check():
     return {
         "status": "online",
         "app": "NyayaLens AI",
-        "tagline": "Understand the fine print. Navigate your next step."
+        "tagline": "Understand the fine print. Navigate your next step.",
+        "disclaimer": "NyayaLens AI provides legal information and assistance, rather than replacing professional legal advice."
     }
 
 @app.get("/api/samples")
 def get_sample_documents():
     """
+    [Simplifying & Demonstrating Contracts]
     Returns pre-packaged synthetic document metadata for instant testing.
     """
     samples = []
@@ -57,13 +83,34 @@ def get_sample_documents():
 @app.post("/api/documents/upload", response_model=DocumentSummary)
 async def upload_document(file: UploadFile = File(...)):
     """
-    [Ingestion Workflow] Uploads PDF/DOCX, extracts text, categorizes document type, and builds analysis.
+    [Ingestion & Security Workflow] 
+    Uploads PDF/DOCX, validates file size (max 10MB) & extension, sanitizes filename, 
+    extracts text, categorizes document type, and generates executive summaries & checklists.
     """
     if not file.filename:
-        raise HTTPException(status_code=400, detail="No file selected")
+        raise HTTPException(status_code=400, detail="No file selected for upload")
     
+    # Security: Filename Sanitization & Extension Validation
+    safe_filename = os.path.basename(file.filename)
+    safe_filename = re.sub(r'[^a-zA-Z0-9_.-]', '_', safe_filename)
+    ext = os.path.splitext(safe_filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Unsupported file format '{ext}'. Allowed formats: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+    
+    # Security: File Size Enforcement (Max 10MB)
     contents = await file.read()
-    summary = orchestrator.ingest_document(contents, file.filename)
+    if len(contents) > MAX_FILE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=413, 
+            detail=f"File size exceeds maximum allowed limit of {MAX_FILE_SIZE_BYTES // (1024*1024)}MB"
+        )
+    if len(contents) == 0:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+    
+    summary = orchestrator.ingest_document(contents, safe_filename)
     return summary
 
 @app.get("/api/documents", response_model=List[Dict[str, Any]])
@@ -88,6 +135,7 @@ def list_documents():
 @app.get("/api/documents/{doc_id}", response_model=DocumentSummary)
 def get_document(doc_id: str):
     """
+    [Simplifying Complex Legal Documents & Summarization]
     Retrieves full document analysis by ID.
     """
     if doc_id not in DOC_STORE:
@@ -97,7 +145,8 @@ def get_document(doc_id: str):
 @app.get("/api/documents/{doc_id}/before-you-sign", response_model=BeforeYouSignReport)
 def get_before_you_sign_report(doc_id: str):
     """
-    Retrieves the 'Before You Sign' analysis for a document (Legal Documents only).
+    [Highlighting Clauses, Obligations, Risks, & Options]
+    Retrieves the 'Before You Sign' analysis for legal documents.
     """
     if doc_id not in DOC_STORE:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -109,7 +158,8 @@ def get_before_you_sign_report(doc_id: str):
 @app.get("/api/documents/{doc_id}/clauses", response_model=List[Clause])
 def get_document_clauses(doc_id: str):
     """
-    Retrieves extracted clauses with risk indicators.
+    [Highlighting Clauses, Risks, & Inconsistencies]
+    Retrieves extracted clauses with transparent risk indicators.
     """
     if doc_id not in DOC_STORE:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -119,16 +169,16 @@ def get_document_clauses(doc_id: str):
 @app.post("/api/documents/{doc_id}/chat", response_model=ChatResponse)
 def ask_document_question(doc_id: str, request: ChatRequest):
     """
-    [Document-Grounded RAG Q&A]
-    Answers natural language queries using strictly retrieved document chunks with citations.
+    [Answering Questions Based on Legal Documents]
+    Answers natural language queries using strictly retrieved document chunks with verbatim page citations.
     """
     return orchestrator.answer_question(doc_id, request.query)
 
 @app.post("/api/compare", response_model=ContractComparisonResponse)
 def compare_contracts(doc_a_id: str = Body(..., embed=True), doc_b_id: str = Body(..., embed=True)):
     """
-    [Contract Comparison Engine]
-    Compares Document A vs Document B and displays semantic clause diffs. Validates legal eligibility.
+    [Comparing Contracts, Agreements, or Policies]
+    Compares Document A vs Document B and displays semantic clause diffs with practical implications.
     """
     try:
         return orchestrator.compare_contracts(doc_a_id, doc_b_id)
@@ -138,8 +188,8 @@ def compare_contracts(doc_a_id: str = Body(..., embed=True), doc_b_id: str = Bod
 @app.get("/api/documents/{doc_id}/prep-kit", response_model=PrepKit)
 def generate_prep_kit(doc_id: str):
     """
-    [Legal Professional Preparation Kit]
-    Generates downloadable preparation packet for consultation with a lawyer. Validates legal eligibility.
+    [Preparing Information & Questions for a Legal Professional]
+    Generates downloadable consultation packet for meeting with a legal professional.
     """
     try:
         return orchestrator.generate_prep_kit(doc_id)
@@ -161,3 +211,4 @@ if os.path.exists(frontend_dist):
         if os.path.exists(file_path) and os.path.isfile(file_path):
             return FileResponse(file_path)
         return FileResponse(os.path.join(frontend_dist, "index.html"))
+

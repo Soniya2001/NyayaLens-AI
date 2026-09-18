@@ -1,7 +1,4 @@
 from typing import Dict, Any
-from app.models.schemas import (
-    DocumentSummary, BeforeYouSignReport, Clause, RiskLabel, ClauseCategory, PrepKit
-)
 from datetime import datetime
 
 SYNTHETIC_DOCUMENTS: Dict[str, Dict[str, Any]] = {
@@ -12,6 +9,12 @@ SYNTHETIC_DOCUMENTS: Dict[str, Dict[str, Any]] = {
         "file_type": "pdf",
         "uploaded_at": datetime.now().isoformat(),
         "page_count": 4,
+        "classification": {
+            "document_type": "Employment Agreement",
+            "is_legal_document": True,
+            "confidence": 0.99,
+            "reason": "Contains binding employment terms, salary compensation, probation, notice period, IP assignment, and post-employment covenants."
+        },
         "executive_summary": (
             "This is a full-time Employment Agreement between Nexus Tech Solutions Pvt. Ltd. "
             "and Arjun Sharma for the position of Senior Software Engineer in Bengaluru, India. "
@@ -29,6 +32,8 @@ SYNTHETIC_DOCUMENTS: Dict[str, Dict[str, Any]] = {
             "Salary Payment: 1st day of each calendar month"
         ],
         "total_financial_value": "₹28,000,000 CTC per annum + 10% annual performance bonus",
+        "key_topics": ["Employment Terms", "Notice Period", "IP Assignment", "Non-Compete"],
+        "key_takeaways": ["90-day notice period required post probation", "12-month post-employment non-compete restriction"],
         "full_text": """EMPLOYMENT AGREEMENT
 
 This Employment Agreement ("Agreement") is executed on this 25th day of September 2026 at Bengaluru, Karnataka, India by and between:
@@ -150,6 +155,12 @@ Mr. Arjun Sharma, residing at Indiranagar, Bengaluru - 560038 (hereinafter refer
         "file_type": "pdf",
         "uploaded_at": datetime.now().isoformat(),
         "page_count": 3,
+        "classification": {
+            "document_type": "Rental / Lease Agreement",
+            "is_legal_document": True,
+            "confidence": 0.98,
+            "reason": "Contains property tenancy terms, rent payments, security deposit rules, lock-in period, and maintenance covenants."
+        },
         "executive_summary": (
             "An 11-month Residential Lease Agreement between Mr. Ramesh V. Kumar (Lessor) "
             "and Priya Nair (Lessee) for a 2BHK Apartment in HSR Layout, Bengaluru. "
@@ -167,6 +178,8 @@ Mr. Arjun Sharma, residing at Indiranagar, Bengaluru - 560038 (hereinafter refer
             "Notice Period: 2 Months written notice before vacating"
         ],
         "total_financial_value": "₹35,000 Monthly Rent + ₹200,000 Security Deposit",
+        "key_topics": ["Tenancy Rent", "Security Deposit", "Lock-in Period", "Painting Deduction"],
+        "key_takeaways": ["6-month lock-in period", "Fixed 1 month rent deduction for repainting upon exit"],
         "full_text": """RESIDENTIAL LEASE AGREEMENT
 
 This Lease Agreement is executed on 15th October 2026 at Bengaluru between:
@@ -177,7 +190,7 @@ The Landlord leases Apartment 302, Green Acres, HSR Layout, Bengaluru.
 Monthly rent is ₹35,000/-, payable by the 5th of every month.
 
 2. SECURITY DEPOSIT
-The Tenant has deposited ₹2,000,000/- as refundable interest-free security deposit.
+The Tenant has deposited ₹2,00,000/- as refundable interest-free security deposit.
 The deposit shall be refunded upon vacating after deducting painting charges (fixed 1 month rent) and damages.
 
 3. LOCK-IN PERIOD & NOTICE
@@ -248,5 +261,119 @@ Post lock-in, either party must give 2 months notice.
                 "page_number": 2
             }
         ]
+    },
+    "nda_003": {
+        "doc_id": "nda_003",
+        "title": "Mutual Non-Disclosure & Confidentiality Agreement",
+        "file_name": "Mutual_NDA_Agreement.pdf",
+        "file_type": "pdf",
+        "uploaded_at": datetime.now().isoformat(),
+        "page_count": 2,
+        "classification": {
+            "document_type": "NDA / Confidentiality Agreement",
+            "is_legal_document": True,
+            "confidence": 0.99,
+            "reason": "Contains legally binding mutual non-disclosure covenants, trade secret protection, term of confidentiality, and remedies for breach."
+        },
+        "executive_summary": (
+            "A Mutual Non-Disclosure Agreement between Acme Corp and CloudScale Labs. "
+            "Protects proprietary technical disclosures, algorithms, and business plans "
+            "for a period of 3 years from disclosure."
+        ),
+        "parties_involved": ["Acme Corp", "CloudScale Labs"],
+        "key_dates_and_deadlines": ["Effective Date: October 1, 2026", "Confidentiality Term: 3 Years"],
+        "total_financial_value": "Injunctions & Injunctive Relief for damages",
+        "key_topics": ["Confidential Information", "Exclusions from Confidentiality", "Term & Survival"],
+        "key_takeaways": ["3-year obligation to keep disclosed trade secrets strictly confidential"],
+        "full_text": """MUTUAL NON-DISCLOSURE AGREEMENT
+
+This Mutual Non-Disclosure Agreement ("Agreement") is entered into as of October 1, 2026 by and between Acme Corp and CloudScale Labs.
+
+1. CONFIDENTIAL INFORMATION
+Each party agrees not to disclose proprietary technical data, algorithms, or customer lists received from the disclosing party to any third party.
+
+2. TERM AND OBLIGATIONS
+The obligations of confidentiality shall survive for three (3) years from the date of disclosure.
+""",
+        "before_you_sign": {
+            "document_title": "Mutual Non-Disclosure & Confidentiality Agreement",
+            "document_type": "NDA / Confidentiality Agreement",
+            "what_you_are_agreeing_to": [
+                "Maintaining mutual confidentiality of disclosed trade secrets and proprietary algorithms.",
+                "Refraining from disclosing confidential information to unauthorized third parties."
+            ],
+            "what_you_must_pay": ["No direct financial fee; damages or injunctive relief apply in case of breach."],
+            "your_key_obligations": ["Protect received proprietary materials for 3 years."],
+            "cancellation_and_exit_rules": ["Confidentiality duties survive agreement termination for 3 years."],
+            "missing_or_ambiguous_information": ["Does not specify exact court jurisdiction venue."],
+            "questions_for_lawyer_or_other_party": ["Does confidentiality apply to information publicly available elsewhere?"],
+            "jurisdiction_noted": "India"
+        },
+        "clauses": [
+            {
+                "id": "nda_c1",
+                "section_number": "1",
+                "title": "Non-Disclosure of Proprietary Technical Data",
+                "category": "Confidentiality & Data Privacy",
+                "risk_label": "Important to Understand",
+                "original_text": "Each party agrees not to disclose proprietary technical data, algorithms, or customer lists received from the disclosing party to any third party.",
+                "plain_summary": "You cannot share any confidential technical information or customer lists with anyone outside the two companies.",
+                "why_it_matters": "Breach can lead to lawsuits and legal injunctions.",
+                "suggested_questions": ["What standard of care is required for handling documents?"],
+                "page_number": 1
+            }
+        ]
+    },
+    "interview_004": {
+        "doc_id": "interview_004",
+        "title": "Amazon Confidential Amazon Interview Question Bank",
+        "file_name": "Amazon_Interview_Question_Bank.pdf",
+        "file_type": "pdf",
+        "uploaded_at": datetime.now().isoformat(),
+        "page_count": 5,
+        "classification": {
+            "document_type": "Interview / Career Document",
+            "is_legal_document": False,
+            "confidence": 0.98,
+            "reason": "The document contains interview questions, leadership principle scenarios, and career preparation content rather than contractual obligations or legal agreements."
+        },
+        "executive_summary": (
+            "This document is an Amazon Software Development Engineer & System Design Interview Preparation Guide. "
+            "It features behavioral questions mapped to Amazon's 16 Leadership Principles (Customer Obsession, Ownership, Bias for Action), "
+            "coding challenges, system design patterns, and STAR method response frameworks."
+        ),
+        "parties_involved": [],
+        "key_dates_and_deadlines": [],
+        "total_financial_value": None,
+        "key_topics": [
+            "Amazon Leadership Principles (Customer Obsession, Ownership, Bias for Action)",
+            "Behavioral Interview Preparation (STAR Method)",
+            "System Design & Distributed Systems Scenarios",
+            "Data Structures & Coding Problem Bank"
+        ],
+        "key_takeaways": [
+            "Use the STAR method (Situation, Task, Action, Result) for behavioral responses.",
+            "Focus heavily on metrics and customer-centric outcomes during interview answers.",
+            "Practice system design scalability tradeoffs (Load Balancing, Caching, Sharding)."
+        ],
+        "full_text": """AMAZON CONFIDENTIAL AMAZON INTERVIEW QUESTION BANK
+
+1. LEADERSHIP PRINCIPLES & BEHAVIORAL QUESTIONS
+- Customer Obsession: Describe a situation where you went above and beyond for a customer.
+- Ownership: Give an example of a time when you took initiative on a project outside your responsibility.
+- Bias for Action: Tell me about a time you made a decision with incomplete data.
+- Have Courage; Disagree and Commit: Tell me about a time you disagreed with a senior technical lead.
+
+2. SYSTEM DESIGN & ARCHITECTURE QUESTIONS
+- How would you design Amazon Prime Video video streaming service for 50 million concurrent users?
+- Design a high-throughput distributed key-value store with eventual consistency.
+- Explain trade-offs between SQL relational databases vs NoSQL DynamoDB for order history.
+
+3. DATA STRUCTURES & CODING QUESTIONS
+- Given a list of customer orders, find the top K most frequent items in O(N log K) time.
+- Implement LRU Cache with O(1) get and put operations.
+""",
+        "before_you_sign": None,
+        "clauses": []
     }
 }

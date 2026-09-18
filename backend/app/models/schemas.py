@@ -44,6 +44,12 @@ class BeforeYouSignReport(BaseModel):
     questions_for_lawyer_or_other_party: List[str]
     jurisdiction_noted: Optional[str] = "India (or as stated in contract)"
 
+class DocumentClassification(BaseModel):
+    document_type: str
+    is_legal_document: bool
+    confidence: Optional[float] = None
+    reason: str
+
 class DocumentSummary(BaseModel):
     doc_id: str
     title: str
@@ -52,11 +58,14 @@ class DocumentSummary(BaseModel):
     uploaded_at: datetime
     page_count: int
     executive_summary: str
-    parties_involved: List[str]
-    key_dates_and_deadlines: List[str]
+    classification: DocumentClassification
+    parties_involved: List[str] = []
+    key_dates_and_deadlines: List[str] = []
     total_financial_value: Optional[str] = None
-    before_you_sign: BeforeYouSignReport
-    clauses: List[Clause]
+    key_topics: List[str] = []
+    key_takeaways: List[str] = []
+    before_you_sign: Optional[BeforeYouSignReport] = None
+    clauses: List[Clause] = []
 
 class Citation(BaseModel):
     page_number: int
@@ -71,10 +80,12 @@ class ChatResponse(BaseModel):
     answer: str
     citations: List[Citation]
     information_missing: bool = False
+    is_legal_document: bool = True
+    document_type: str = "General Document"
     suggested_followups: List[str]
     disclaimer: str = (
-        "NyayaLens AI provides general legal document information, not legal advice. "
-        "Consult a qualified attorney for specific legal determinations."
+        "NyayaLens AI provides general document information. "
+        "Consult a qualified attorney for legal determinations."
     )
 
 class ClauseDiff(BaseModel):

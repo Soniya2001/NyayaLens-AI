@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { askQuestion } from '../../services/api';
 import type { ChatResponse, Citation } from '../../types';
 import { Send, Bot, User, Bookmark, ArrowRight, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
@@ -6,6 +6,8 @@ import { Send, Bot, User, Bookmark, ArrowRight, ShieldCheck, Sparkles, Loader2 }
 interface Props {
   docId: string;
   docTitle: string;
+  isLegalDocument?: boolean;
+  documentType?: string;
 }
 
 interface MessageItem {
@@ -16,22 +18,37 @@ interface MessageItem {
   suggestedFollowups?: string[];
 }
 
-export const QAChatWindow: React.FC<Props> = ({ docId, docTitle }) => {
-  const [messages, setMessages] = useState<MessageItem[]>([
-    {
-      id: 'init',
-      role: 'assistant',
-      text: `Hello! I'm your NyayaLens AI assistant for **${docTitle}**. Ask me any question about notice periods, payment terms, obligations, or liabilities. All my answers are strictly grounded in your document with page citations.`,
-      suggestedFollowups: [
-        'Can I terminate this agreement before the end date?',
-        'What happens if I miss a payment date?',
-        'Who owns the work and code I create?',
-        'What are my responsibilities under this contract?'
-      ]
-    }
-  ]);
+export const QAChatWindow: React.FC<Props> = ({ docId, docTitle, isLegalDocument = true, documentType = "Document" }) => {
+  const [messages, setMessages] = useState<MessageItem[]>([]);
   const [inputQuery, setInputQuery] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Re-initialize greeting when document changes
+    const initialMsg: MessageItem = isLegalDocument
+      ? {
+          id: 'init',
+          role: 'assistant',
+          text: `Hello! I'm your NyayaLens AI assistant for **${docTitle}**. Ask me any question about terms, obligations, or provisions in this contract. All answers are strictly grounded in your document with page citations.`,
+          suggestedFollowups: [
+            'What are my main obligations under this contract?',
+            'What notice period or exit terms apply?',
+            'What are the key terms in this agreement?'
+          ]
+        }
+      : {
+          id: 'init',
+          role: 'assistant',
+          text: `Hello! I'm your NyayaLens AI assistant for **${docTitle}** (${documentType}). Ask me any question about the content, topics, or key information in this document. All answers are strictly grounded in the text.`,
+          suggestedFollowups: [
+            'What are the main topics covered in this document?',
+            'Summarize the key questions or challenges in this text',
+            'What are the core takeaways?'
+          ]
+        };
+
+    setMessages([initialMsg]);
+  }, [docId, docTitle, isLegalDocument, documentType]);
 
   const handleSend = async (queryText?: string) => {
     const q = queryText || inputQuery;
@@ -77,7 +94,7 @@ export const QAChatWindow: React.FC<Props> = ({ docId, docTitle }) => {
           </div>
           <div>
             <h3 className="text-sm font-bold text-white flex items-center space-x-1.5">
-              <span>Evidence-Grounded Legal Q&A</span>
+              <span>{isLegalDocument ? 'Evidence-Grounded Legal Q&A' : 'Evidence-Grounded Document Q&A'}</span>
               <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
             </h3>
             <p className="text-[11px] text-slate-400 truncate max-w-xs">{docTitle}</p>
@@ -189,7 +206,7 @@ export const QAChatWindow: React.FC<Props> = ({ docId, docTitle }) => {
             type="text"
             value={inputQuery}
             onChange={e => setInputQuery(e.target.value)}
-            placeholder="Ask anything (e.g. 'Can I exit early?', 'What is the notice period?')..."
+            placeholder={isLegalDocument ? "Ask any question about this contract..." : "Ask any question about this document..."}
             className="flex-1 bg-slate-900 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-colors"
           />
           <button

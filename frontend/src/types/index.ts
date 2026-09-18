@@ -41,6 +41,13 @@ export interface BeforeYouSignReport {
   jurisdiction_noted?: string;
 }
 
+export interface DocumentClassification {
+  document_type: string;
+  is_legal_document: boolean;
+  confidence?: number | null;
+  reason: string;
+}
+
 export interface DocumentSummary {
   doc_id: string;
   title: string;
@@ -48,11 +55,14 @@ export interface DocumentSummary {
   file_type: string;
   uploaded_at: string;
   page_count: number;
+  classification: DocumentClassification;
   executive_summary: string;
   parties_involved: string[];
   key_dates_and_deadlines: string[];
-  total_financial_value?: string;
-  before_you_sign: BeforeYouSignReport;
+  total_financial_value?: string | null;
+  key_topics?: string[];
+  key_takeaways?: string[];
+  before_you_sign?: BeforeYouSignReport | null;
   clauses: Clause[];
 }
 
@@ -66,6 +76,8 @@ export interface ChatResponse {
   answer: string;
   citations: Citation[];
   information_missing: boolean;
+  is_legal_document?: boolean;
+  document_type?: string;
   suggested_followups: string[];
   disclaimer: string;
 }
@@ -112,4 +124,5 @@ export interface SampleDoc {
   file_name: string;
   file_type: string;
   executive_summary: string;
+  classification?: DocumentClassification;
 }
